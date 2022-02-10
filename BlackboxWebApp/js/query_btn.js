@@ -4,3 +4,8 @@ function queryBtnListener() {
     alert("Database queried!");
 
 }
+
+// This function will pull the data from the SQL database
+function sqlPull() {
+
+}
