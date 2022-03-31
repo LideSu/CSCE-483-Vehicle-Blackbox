@@ -3,32 +3,33 @@ from turtle import speed
 import obd
 import time
 from datetime import datetime
-import logging
 import threading
-import obd_reader
 import board
 import adafruit_icm20x
 
 OBD_readings = {'RPM':0, 'Speed':0, 'Throttle':0}
 IMU_readings = {'AX':0, 'AY':0, 'AZ':0, 'GX':0, 'GY':0, 'GZ':0 }
+GPS_readings = {'Latitude':0, 'Longitude':0 }
 
 class OBD_sensor:
     def __init__(self):
         print('OBD: Preparing')
-        self.obd = obd.Async('/dev/rfcomm0', fast=False, check_voltage=False)
-        self.obd.watch(obd.commands.RPM)
-        self.obd.watch(obd.commands.SPEED)
-        self.obd.watch(obd.commands.THROTTLE_POS)
-        self.obd.start()
+        self.obd = obd.OBD('/dev/rfcomm0', fast=False, check_voltage=False)
+        # self.obd = obd.Async('/dev/rfcomm0', fast=False, check_voltage=False)
+        # self.obd.watch(obd.commands.RPM)
+        # self.obd.watch(obd.commands.SPEED)
+        # self.obd.watch(obd.commands.THROTTLE_POS)
+        # self.obd.start()
   
     def stop(self):
         print('OBD: Stoping')
         self.gather_data = False
 
     def exit(self):
-        self.obd.stop()
-        self.obd.unwatch_all()
         self.obd.close()
+        # self.obd.stop()
+        # self.obd.unwatch_all()
+        # self.obd.close()
         print("OBD: Exiting")
         
     def run(self):
@@ -40,8 +41,10 @@ class OBD_sensor:
                     OBD_readings['RPM'] = self.obd.query(obd.commands.RPM).value.magnitude
                     OBD_readings['Speed'] = self.obd.query(obd.commands.SPEED).value.to("mph").magnitude
                     OBD_readings['Throttle'] = self.obd.query(obd.commands.THROTTLE_POS).value.magnitude
-            except:
-                print("Error in OBD")
+            except Exception as err:
+                print("Error OBD:", err)
+                x = int(time.time())
+                print(x)
                 
         print("OBD: Ending Run")
         
@@ -78,18 +81,14 @@ class IMU_sensor():
 if __name__ == "__main__":
 
     header = ['Time', 'RPM', 'MPH', 'THROTTLE_POS', 'AX','AY','AZ', 'GX', 'GY', 'GZ']
-    filename = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p") + '.csv'
- 
-    # obd2 = Thread(target=obd_reader.obd_sensor)
-    # obd2.start()
-    # time.sleep(3)
-    # imu = threading.Thread(target=IMU_sensor())
+    filename = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p") + 't.csv'
+
     OBD = OBD_sensor()
     IMU = IMU_sensor()
 
     OBD_thread = threading.Thread(target=OBD.run)
     IMU_thread = threading.Thread(target=IMU.run)
-    time.sleep(1)
+    time.sleep(3)
 
     IMU_thread.start()
     OBD_thread.start()
@@ -107,14 +106,12 @@ if __name__ == "__main__":
             except KeyboardInterrupt:
                 break
 
-        OBD.stop()
-        IMU.stop()
-        
-        time.sleep(1)
+    OBD.stop()
+    IMU.stop()
+    
+    time.sleep(1)
 
-        OBD.exit()
+    OBD.exit()
 
-        OBD_thread.join()
-        IMU_thread.join()
-
-        f.close()
+    OBD_thread.join()
+    IMU_thread.join()
