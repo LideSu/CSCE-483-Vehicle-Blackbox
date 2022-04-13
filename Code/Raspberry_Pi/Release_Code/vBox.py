@@ -117,7 +117,7 @@ class IMU_sensor():
 if __name__ == "__main__":
 
     header = ['Time', 'RPM', 'MPH', 'THROTTLE_POS', 'AX','AY','AZ', 'GX', 'GY', 'GZ', 'Latitude', 'Longitude']
-    filename = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p") + 't.csv'
+    filename = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p") + '.csv'
 
     OBD = OBD_sensor()
     IMU = IMU_sensor()
