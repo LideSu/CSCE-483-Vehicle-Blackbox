@@ -1,3 +1,4 @@
+from concurrent.futures.process import _chain_from_iterable_of_lists
 import csv
 from turtle import speed
 import obd
@@ -8,10 +9,26 @@ import board
 import adafruit_gps
 import serial
 import adafruit_icm20x
+from picamera import PiCamera
 
 OBD_readings = {'RPM':0, 'Speed':0, 'Throttle':0}
 IMU_readings = {'AX':0, 'AY':0, 'AZ':0, 'GX':0, 'GY':0, 'GZ':0 }
 GPS_readings = {'Latitude':0, 'Longitude':0 }
+
+class pi_Camera:
+    def __init__(self, f_name):
+        print('Camera: Preparing')
+        self.camera = PiCamera()
+        self.file_n = f_name
+  
+    def stop(self):
+        print('Camera: Stoping')
+        self.camera.stop_recording()
+        
+    def run(self):
+        print('Camera: Running')
+        self.camera.start_recording('/home/pi/Documents/' + self.file_n + '.h264')
+                
 
 class GPS_sensor:
     def __init__(self):
@@ -117,20 +134,24 @@ class IMU_sensor():
 if __name__ == "__main__":
 
     header = ['Time', 'RPM', 'MPH', 'THROTTLE_POS', 'AX','AY','AZ', 'GX', 'GY', 'GZ', 'Latitude', 'Longitude']
-    filename = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p") + '.csv'
+    name = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+    filename = name + '.csv'
 
     OBD = OBD_sensor()
     IMU = IMU_sensor()
     GPS = GPS_sensor()
+    Camera = pi_Camera(name)
 
     OBD_thread = threading.Thread(target=OBD.run)
     IMU_thread = threading.Thread(target=IMU.run)
     GPS_thread = threading.Thread(target=GPS.run)
+    Camera_thread = threading.Thread(target=Camera.run)
     time.sleep(3)
 
     IMU_thread.start()
     OBD_thread.start()
     GPS_thread.start()
+    Camera_thread.start()
 
     
     with open(filename, 'w', newline='') as f:
@@ -148,6 +169,7 @@ if __name__ == "__main__":
     OBD.stop()
     IMU.stop()
     GPS.stop()
+    Camera.stop()
     
     time.sleep(1)
 
@@ -156,3 +178,4 @@ if __name__ == "__main__":
     GPS_thread.join()
     OBD_thread.join()
     IMU_thread.join()
+    Camera_thread.join()
