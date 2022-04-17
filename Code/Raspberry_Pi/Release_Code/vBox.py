@@ -19,6 +19,7 @@ class pi_Camera:
     def __init__(self, f_name):
         print('Camera: Preparing')
         self.camera = PiCamera()
+        self.camera.rotation = 180
         self.file_n = f_name
   
     def stop(self):
