@@ -10,6 +10,7 @@ import adafruit_gps
 import serial
 import adafruit_icm20x
 from picamera import PiCamera
+from obd import OBDStatus
 
 OBD_readings = {'RPM':0, 'Speed':0, 'Throttle':0}
 IMU_readings = {'AX':0, 'AY':0, 'AZ':0, 'GX':0, 'GY':0, 'GZ':0 }
@@ -68,7 +69,7 @@ class GPS_sensor:
 class OBD_sensor:
     def __init__(self):
         print('OBD: Preparing')
-        self.obd = obd.OBD('/dev/rfcomm0', fast=False, check_voltage=False, baudrate=10400)
+        self.obd = obd.OBD('/dev/rfcomm0', fast=False, baudrate=10400)
         # self.obd = obd.Async('/dev/rfcomm0', fast=False, check_voltage=False)
         # self.obd.watch(obd.commands.RPM)
         # self.obd.watch(obd.commands.SPEED)
@@ -95,6 +96,7 @@ class OBD_sensor:
                     OBD_readings['RPM'] = self.obd.query(obd.commands.RPM).value.magnitude
                     OBD_readings['Speed'] = self.obd.query(obd.commands.SPEED).value.to("mph").magnitude
                     OBD_readings['Throttle'] = self.obd.query(obd.commands.THROTTLE_POS).value.magnitude
+
             except Exception as err:
                 print("Error OBD:", err)
                 x = int(time.time())
