@@ -20,7 +20,7 @@ class pi_Camera:
     def __init__(self, f_name):
         print('Camera: Preparing')
         self.camera = PiCamera()
-        self.camera.rotation = 180
+        # self.camera.rotation = 1803
         self.file_n = f_name
   
     def stop(self):
@@ -70,6 +70,8 @@ class OBD_sensor:
     def __init__(self):
         print('OBD: Preparing')
         self.obd = obd.OBD('/dev/rfcomm0', fast=False, baudrate=10400)
+		
+
         # self.obd = obd.Async('/dev/rfcomm0', fast=False, check_voltage=False)
         # self.obd.watch(obd.commands.RPM)
         # self.obd.watch(obd.commands.SPEED)
