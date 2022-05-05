@@ -1,47 +1,55 @@
-import { merge } from 'lodash';
+/*eslint-disable*/
+import {merge} from 'lodash';
 import ReactApexChart from 'react-apexcharts';
 // material
-import { Box, Card, CardHeader } from '@mui/material';
+import {Box, Card, CardHeader} from '@mui/material';
 // utils
 //
-import { BaseOptionChart } from '../../../components/charts';
+import {BaseOptionChart} from '../../../components/charts';
 
 // ----------------------------------------------------------------------
 
-const CHART_DATA = [
-  {
-    name: 'Trip',
-    type: 'line',
-    data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39]
-  }
-];
-export default function AppAccelerationGraph() {
-  const chartOptions = merge(BaseOptionChart(), {
-    stroke: { width: 3 },
-    plotOptions: { bar: { columnWidth: '11%', borderRadius: 4 } },
-    fill: { type: 'solid' },
-    labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    xaxis: { type: 'time' },
-    tooltip: {
-      shared: true,
-      intersect: false,
-      y: {
-        formatter: (y) => {
-          if (typeof y !== 'undefined') {
-            return `${y.toFixed(0)} visits`;
-          }
-          return y;
-        }
-      }
+export default function AppAccelerationGraph(params) {
+    var mags = []
+    for (let i = 0; i < params.delta_acc_x.length; i++) {
+        mags[i] = (Math.sqrt(Math.pow(params.delta_acc_x[i], 2)
+            + Math.pow(params.delta_acc_y[i], 2) + Math.pow(params.delta_acc_z[i], 2))).toFixed(2);
+        // console.log(mags[i]);
     }
-  });
 
-  return (
-      <Card>
-        <CardHeader title="Acceleration Graph" subheader="Acceleration (ft/s²) vs. Time (sec) Graph" />
-        <Box sx={{ p: 3, pb: 1 }} dir="ltr">
-          <ReactApexChart type="line" series={CHART_DATA} options={chartOptions} height={364} />
-        </Box>
-      </Card>
-  );
+    const CHART_DATA = [
+        {
+            name: 'Acceleration',
+            type: 'line',
+            data: mags
+        }
+    ];
+
+    const chartOptions = merge(BaseOptionChart(), {
+        stroke: {width: 3},
+        plotOptions: {bar: {columnWidth: '11%', borderRadius: 4}},
+        fill: {type: 'solid'},
+        labels: params.times,
+        tooltip: {
+            shared: true,
+            intersect: false,
+            y: {
+                formatter: (y) => {
+                    if (typeof y !== 'undefined') {
+                        return `${y.toFixed(2)} m/s²`;
+                    }
+                    return y;
+                }
+            }
+        }
+    });
+
+    return (
+        <Card>
+            <CardHeader title="Acceleration Graph" subheader="Acceleration (m/s²) vs. Time (sec) Graph"/>
+            <Box sx={{p: 3, pb: 1}} dir="ltr">
+                <ReactApexChart type="line" series={CHART_DATA} options={chartOptions} height={364}/>
+            </Box>
+        </Card>
+    );
 }

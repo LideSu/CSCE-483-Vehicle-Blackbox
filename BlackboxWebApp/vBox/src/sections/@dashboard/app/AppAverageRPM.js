@@ -17,12 +17,11 @@ const RootStyle = styled(Card)(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-const TOTAL = 2123;
-
-export default function AppAverageRPM() {
+// eslint-disable-next-line camelcase
+export default function AppAverageRPM({average_rpm}) {
   return (
     <RootStyle>
-      <Typography variant="h3">{`${fNumber(TOTAL)} rpm`}</Typography>
+      <Typography variant="h3">{`${fNumber(average_rpm)} rpm`}</Typography>
       <Typography variant="subtitle2" sx={{ opacity: 0.72 }}>
         Average RPM
       </Typography>

@@ -21,7 +21,7 @@ import PropTypes from "prop-types";
 // ----------------------------------------------------------------------
 
 async function loginUser(credentials) {
-  return fetch('https://ec2-3-86-224-254.compute-1.amazonaws.com:8080/login', {
+  return fetch('https://senior-design-vbox.uc.r.appspot.com/login', {
     //https://ec2-3-86-224-254.compute-1.amazonaws.com:8080/login
     method: 'POST',
     headers: {
@@ -31,6 +31,8 @@ async function loginUser(credentials) {
     body: JSON.stringify(credentials)
   })
       .then(data => data.json())
+
+  // Store all trip information into sessionStorage
 }
 
 export default function LoginForm({setToken}) {
@@ -116,14 +118,6 @@ export default function LoginForm({setToken}) {
           </Stack>
 
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-            {/*<FormControlLabel*/}
-            {/*    control={<Checkbox {...getFieldProps('remember')} checked={values.remember} />}*/}
-            {/*    label="Remember me"*/}
-            {/*/>*/}
-
-            {/*<Link component={RouterLink} variant="subtitle2" to="#" underline="hover">*/}
-            {/*  Forgot password?*/}
-            {/*</Link>*/}
           </Stack>
 
           <LoadingButton

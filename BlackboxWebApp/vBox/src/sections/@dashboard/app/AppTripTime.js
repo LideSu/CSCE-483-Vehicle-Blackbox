@@ -18,12 +18,10 @@ const RootStyle = styled(Card)(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-const TOTAL = 8274;
-
-export default function AppTripTime() {
+export default function AppTripTime({time}) {
   return (
     <RootStyle>
-      <Typography variant="h3">{`${fHrMinSec(TOTAL)}`}</Typography>
+      <Typography variant="h3">{`${fHrMinSec(time)}`}</Typography>
       <Typography variant="subtitle2" sx={{ opacity: 0.72 }}>
         Trip Time
       </Typography>
