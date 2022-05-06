@@ -12,6 +12,7 @@ import serial
 import adafruit_icm20x
 from picamera import PiCamera
 from obd import OBDStatus
+from subprocess import call 
 
 OBD_readings = {'RPM':0, 'Speed':0, 'Throttle':0}
 IMU_readings = {'AX':0, 'AY':0, 'AZ':0, 'GX':0, 'GY':0, 'GZ':0 }
@@ -148,60 +149,79 @@ if __name__ == "__main__":
     header = ['Time', 'RPM', 'MPH', 'THROTTLE_POS', 'AX','AY','AZ', 'GX', 'GY', 'GZ', 'Latitude', 'Longitude']
     name = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
     filename = name + '.csv'
-
-    OBD = OBD_sensor()
+    
+    # OBD = OBD_sensor()
     IMU = IMU_sensor()
     GPS = GPS_sensor()
     Camera = pi_Camera(name)
 
-    OBD_thread = threading.Thread(target=OBD.run)
-    IMU_thread = threading.Thread(target=IMU.run)
-    GPS_thread = threading.Thread(target=GPS.run)
-    Camera_thread = threading.Thread(target=Camera.run)
-    time.sleep(3)
+    retry = True
+    while(retry):
+        OBD = OBD_sensor()
+        OBD_thread = threading.Thread(target=OBD.run)
+        IMU_thread = threading.Thread(target=IMU.run)
+        GPS_thread = threading.Thread(target=GPS.run)
+        Camera_thread = threading.Thread(target=Camera.run)
+        time.sleep(3)
 
-    OBD_thread.start()
-    IMU_thread.start()
-    GPS_thread.start()
-    Camera_thread.start()
+        IMU_thread.start()
+        GPS_thread.start()
+        Camera_thread.start()
+        OBD_thread.start()
 
-    
-    with open(filename, 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(header)
-        while True:
-            try:
-                if exit_event.is_set():
-                    delete = True
+        
+        with open(filename, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            while True:
+                try:
+                    if exit_event.is_set():
+                        exit_event.clear()
+                        delete = True
+                        break
+
+                    if exit_gracefully_event.is_set():
+                        delete = False
+                        retry = False
+                        break
+
+                    data = [int(time.time()) , OBD_readings['RPM'], OBD_readings['Speed'], OBD_readings['Throttle'], IMU_readings['AX'], IMU_readings['AY'], IMU_readings['AZ'],IMU_readings['GX'], IMU_readings['GY'], IMU_readings['GZ'], GPS_readings['Latitude'], GPS_readings['Longitude']]
+                    writer.writerow(data)
+                    time.sleep(1)
+                
+                except KeyboardInterrupt:
+                    retry = False
                     break
 
-                if exit_gracefully_event.is_set():
-                    break
+        time.sleep(1)
+        OBD.stop()
+        IMU.stop()
+        GPS.stop()
+        Camera.stop()
+        
+        time.sleep(1)
 
-                data = [int(time.time()) , OBD_readings['RPM'], OBD_readings['Speed'], OBD_readings['Throttle'], IMU_readings['AX'], IMU_readings['AY'], IMU_readings['AZ'],IMU_readings['GX'], IMU_readings['GY'], IMU_readings['GZ'], GPS_readings['Latitude'], GPS_readings['Longitude']]
-                writer.writerow(data)
-                time.sleep(1)
-            
-            except KeyboardInterrupt:
-                break
 
-    OBD.stop()
-    IMU.stop()
-    GPS.stop()
-    Camera.stop()
-    
-    time.sleep(1)
+        GPS_thread.join()
+        OBD_thread.join()
+        IMU_thread.join()
+        Camera_thread.join()
 
     OBD.exit()
-
-    GPS_thread.join()
-    OBD_thread.join()
-    IMU_thread.join()
-    Camera_thread.join()
 
     if os.path.isfile(filename) & os.path.isfile(name + '.h264') & delete == True:
         os.remove(filename)
         os.remove(name + '.h264')
+        exit()
+
+    command = "MP4Box -add " + name + '.h264' + " " + name + '.mp4'
+    call([command], shell=True)
+    print("Video converted to mp4")
+    
+    if os.path.isfile(name + '.mp4'):
+        os.remove(name + '.h264')
+
+    exit(0)
     
 
     
